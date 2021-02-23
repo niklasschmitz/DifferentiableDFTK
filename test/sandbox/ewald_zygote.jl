@@ -1,3 +1,4 @@
+using BenchmarkTools
 using LinearAlgebra
 using SpecialFunctions: erfc
 using StaticArrays
@@ -145,6 +146,8 @@ function energy_ewald_zygote(lattice, recip_lattice, charges, positions; η=noth
     energy
 end
 
+#=======#
+
 function compute_forces_zygote(positions, lattice, charges)
     _positions = reduce(hcat, positions)
     forces = first(
@@ -171,26 +174,56 @@ end
 
 #===#
 
-begin
+function benchmark_ewald_zygote(num_atoms=20)
     lattice = [0.0  5.131570667152971 5.131570667152971;
-               5.131570667152971 0.0 5.131570667152971;
-               5.131570667152971 5.131570667152971  0.0]
+    5.131570667152971 0.0 5.131570667152971;
+    5.131570667152971 5.131570667152971  0.0]
     # perturb positions away from equilibrium to get nonzero force
-    positions = [ones(3)/8+rand(3)/20, -ones(3)/8]
-    charges = [14, 14]
+    positions = [ones(3)/8+rand(3)/20 for _ in 1:num_atoms]
+    charges = [14 for _ in 1:num_atoms]
 
     forces_finitediff = compute_forces_finitediff(positions, lattice, charges)
     forces_zygote = compute_forces_zygote(positions, lattice, charges)
 
-    display(forces_finitediff)
-    display(forces_zygote)
+    # check consistency of forces
+    # @test forces_zygote ≈ forces_finitediff atol=1e-6
+    @show sum(abs.(forces_finitediff - forces_zygote)) / (3num_atoms)
 
-    @test forces_zygote ≈ forces_finitediff atol=1e-6
+    println("Timings:")
+    println("Energy without forces")
+    @btime energy_ewald_zygote(lattice, charges, positions)
+    println("FiniteDiff forces")
+    @btime compute_forces_finitediff(positions, lattice, charges)
+    println("Zygote forces")
+    @btime compute_forces_zygote(positions, lattice, charges)
+
+    return nothing
 end
+
+benchmark_ewald_zygote(2)
+    # Timings:
+    # Energy without forces
+    #   3.998 ms (114211 allocations: 4.97 MiB)
+    # FiniteDiff forces
+    #   62.664 ms (1370589 allocations: 59.69 MiB)
+    # Zygote forces
+    #   302.324 ms (1035798 allocations: 48.53 MiB)
+
+benchmark_ewald_zygote(10)
+    # Timings:
+    # Energy without forces
+    #   4.016 ms (114211 allocations: 4.97 MiB)
+    # FiniteDiff forces
+    #   61.380 ms (1370589 allocations: 59.69 MiB)
+    # Zygote forces
+    #   279.571 ms (1035798 allocations: 48.53 MiB)
+
+
+# benchmark_ewald_zygote(50) # TODO this didn't terminate within 10 min;
+
 
 # Zygote-rewrite required us to
 # 1. do not use try-catch
 # 2. use Zygote.@ignore on shell_indices
 # 3. use Zygote.dropgrad on shell int vectors
 
-@time forces_zygote = compute_forces_zygote(positions, lattice, charges)
