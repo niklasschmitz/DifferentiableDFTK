@@ -144,15 +144,15 @@ function benchmark_ewald(num_atoms=20)
 
     println("Timings:")
     println("Energy without forces")
-    @btime energy_ewald(lattice, charges, positions)
+    @btime energy_ewald($lattice, $charges, $positions)
     println("Manual forces")
-    @btime compute_forces_manual(positions, lattice, charges)
+    @btime compute_forces_manual($positions, $lattice, $charges)
     println("FiniteDiff forces")
-    @btime compute_forces_autodiff(positions, lattice, charges; autodiff_backend=:FiniteDiff)
+    @btime compute_forces_autodiff($positions, $lattice, $charges; autodiff_backend=:FiniteDiff)
     println("ForwardDiff forces")
-    @btime compute_forces_autodiff(positions, lattice, charges; autodiff_backend=:ForwardDiff)
+    @btime compute_forces_autodiff($positions, $lattice, $charges; autodiff_backend=:ForwardDiff)
     println("ReverseDiff forces")
-    @btime compute_forces_autodiff(positions, lattice, charges; autodiff_backend=:ReverseDiff)
+    @btime compute_forces_autodiff($positions, $lattice, $charges; autodiff_backend=:ReverseDiff)
     println("ReverseDiff forces (compiled tape)")
     @btime ReverseDiff.gradient!($forces_reversediff, $compiled_energy_tape, $_positions)
 
@@ -175,6 +175,21 @@ benchmark_ewald(2)
     #   65.120 ms (0 allocations: 0 bytes)
 
 # benchmark_ewald(10) # ReverseDiff seems to crash Julia here (due to loop unrolling maybe? TODO)
+
+benchmark_ewald(4)
+    # Timings:
+    # Energy without forces
+    #   10.412 ms (280481 allocations: 14.24 MiB)
+    # Manual forces
+    #   41.158 ms (548468 allocations: 31.73 MiB)
+    # FiniteDiff forces
+    #   392.245 ms (6731643 allocations: 341.68 MiB)
+    # ForwardDiff forces
+    #   36.874 ms (280495 allocations: 59.24 MiB)
+    # ReverseDiff forces
+    #   758.308 ms (14019343 allocations: 526.59 MiB)
+    # ReverseDiff forces (compiled tape)
+    #   238.758 ms (0 allocations: 0 bytes)
 
 #==========#
 # Stresses # probably can be sped up further, but they work :)
