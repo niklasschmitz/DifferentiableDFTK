@@ -1,5 +1,6 @@
 using SpecialFunctions: erfc
 using StaticArrays
+using LinearAlgebra
 
 
 const Mat3{T} = SMatrix{3, 3, T, 9} where T
@@ -14,7 +15,7 @@ lattice and reciprocal lattice vectors as columns. `charges` and
 arrays) in fractional coordinates. If `forces` is not nothing, minus the derivatives
 of the energy with respect to `positions` is computed.
 """
-function energy_ewald(lattice, charges, positions; η=nothing, forces=nothing)
+function energy_ewald_handwritten(lattice, charges, positions; η=nothing, forces=nothing)
     T = eltype(lattice)
 
     for i=1:3
@@ -25,10 +26,10 @@ function energy_ewald(lattice, charges, positions; η=nothing, forces=nothing)
             return T(0)
         end
     end
-    energy_ewald(lattice, T(2π) * inv(lattice'), charges, positions; η=η, forces=forces)
+    energy_ewald_handwritten(lattice, T(2π) * inv(lattice'), charges, positions; η=η, forces=forces)
 end
 
-function energy_ewald(lattice, recip_lattice, charges, positions; η=nothing, forces=nothing)
+function energy_ewald_handwritten(lattice, recip_lattice, charges, positions; η=nothing, forces=nothing)
     T = eltype(lattice)
     @assert T == eltype(recip_lattice)
     @assert length(charges) == length(positions)
@@ -69,10 +70,22 @@ function energy_ewald(lattice, recip_lattice, charges, positions; η=nothing, fo
     # to a particular shell
     # TODO switch to an O(N) implementation
     function shell_indices(ish)
-        # [[i,j,k] for i in -ish:ish for j in -ish:ish for k in -ish:ish
-        #  if maximum(abs.([i,j,k])) == ish]
         (Vec3(i,j,k) for i in -ish:ish for j in -ish:ish for k in -ish:ish
-        if maximum(abs.((i,j,k))) == ish)
+         if maximum(abs.((i,j,k))) == ish)
+        # Iterators.flatten(
+        #     (
+        #         # 8 sides
+        #         (Vec3(i,j,k) for i in -(ish-1):(ish-1), j in -(ish-1):(ish-1), k in (-ish,ish)),
+        #         (Vec3(i,j,k) for j in -(ish-1):(ish-1), k in -(ish-1):(ish-1), i in (-ish,ish)),
+        #         (Vec3(i,j,k) for k in -(ish-1):(ish-1), i in -(ish-1):(ish-1), j in (-ish,ish)),
+        #         # 12 edges
+        #         (Vec3(i,j,k) for i in (-ish,ish), j in (-ish,ish), k in -(ish-1):(ish-1)),
+        #         (Vec3(i,j,k) for j in (-ish,ish), k in (-ish,ish), i in -(ish-1):(ish-1)),
+        #         (Vec3(i,j,k) for k in (-ish,ish), i in (-ish,ish), j in -(ish-1):(ish-1)),
+        #         # 8 corners
+        #         (Vec3(i,j,k) for i in (-ish,ish), j in (-ish,ish), k in (-ish,ish))
+        #     )
+        # )
     end
 
     # Loop over reciprocal-space shells
@@ -142,7 +155,8 @@ function energy_ewald(lattice, recip_lattice, charges, positions; η=nothing, fo
                     continue
                 end
 
-                dist = norm(lattice * (ti - tj - R))
+                v = lattice * (ti - tj - R)
+                dist = norm(v)
 
                 # erfc decays very quickly, so cut off at some point
                 if η * dist > max_erfc_arg
@@ -150,12 +164,15 @@ function energy_ewald(lattice, recip_lattice, charges, positions; η=nothing, fo
                 end
 
                 any_term_contributes = true
-                sum_real += Zi * Zj * erfc(η * dist) / dist
+                energy_contribution = Zi * Zj * erfc(η * dist) / dist 
+                sum_real += energy_contribution
                 if forces !== nothing
-                    # Use ForwardDiff here because I'm lazy. TODO do it properly
-                    Fij = -ForwardDiff.gradient(r -> (dist=norm(lattice * (r - tj - R)); Zi * Zj * erfc(η * dist) / dist), ti)
-                    forces_real[i] += Fij
-                    forces_real[j] += -Fij
+                    # grad = ForwardDiff.gradient(r -> (dist=norm(lattice * (r - tj - R)); Zi * Zj * erfc(η * dist) / dist), ti)
+                    ddist = Zi * Zj * η * (-2exp(-(η*dist)^2) / sqrt(T(π)))
+                    ddist += -energy_contribution
+                    grad = lattice'*((ddist / dist^2) * v)
+                    forces_real[i] += -grad
+                    forces_real[j] += grad
                 end
             end # i,j
         end # R
