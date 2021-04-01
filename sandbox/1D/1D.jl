@@ -124,6 +124,9 @@ back2(out[1])[1]*out[1] ≈ df(out[1])
 #========#
 # Try with NLsolve only (since we already defined its adjoint above)
 
+using FiniteDiff
+using BenchmarkTools
+
 Float64(z::Complex) = Float64(real(z)) # TODO Hack...
 
 let 
@@ -144,6 +147,9 @@ let
     @show g1[1:5]
     @show g3[1:5]
     @show sum(abs, g1 - g3) / length(g1)
+    @btime $blackbox($x) # 21.492 ms (41011 allocations: 8.33 MiB)
+    @btime real(Zygote.gradient($blackbox, $Vx)[1]) # 28.739 ms (116532 allocations: 15.70 MiB)
+    nothing
 end
 
 # TODO next step: implement an adjoint rule for linearsolve or gmres
