@@ -53,3 +53,7 @@ using BenchmarkTools
 @btime ForwardDiff.gradient(kinetic_energy, lattice) #   3.152 ms (   7681 allocations:  11.00 MiB)
 @btime Zygote.gradient(kinetic_energy, lattice)      #  99.395 ms ( 358600 allocations: 129.91 MiB)
 @btime ReverseDiff.gradient(kinetic_energy, lattice) # 278.207 ms (4301696 allocations: 158.10 MiB)
+
+using FiniteDiff
+@time FiniteDiff.finite_difference_gradient(kinetic_energy, lattice)
+@btime FiniteDiff.finite_difference_gradient(kinetic_energy, lattice) #   10.901 ms (136658 allocations: 30.14 MiB)
