@@ -57,3 +57,13 @@ using BenchmarkTools
 using FiniteDiff
 @time FiniteDiff.finite_difference_gradient(kinetic_energy, lattice)
 @btime FiniteDiff.finite_difference_gradient(kinetic_energy, lattice) #   10.901 ms (136658 allocations: 30.14 MiB)
+
+#===#
+# Can we compare to differentiating *through* the SCF solve ?
+function kinetic_energy(lattice, basis)
+    scfres = self_consistent_field(basis, tol=1e-8)
+    kinetic_energy(lattice, basis, scfres.ψ, scfres.occupation)
+end
+
+@time kinetic_energy(lattice, basis) # 6.563267 seconds (237.02 k allocations: 422.728 MiB, 1.07% gc time)
+@time ForwardDiff.gradient(lattice -> kinetic_energy(lattice, basis), lattice) # 10.585561 seconds (5.96 M allocations: 801.731 MiB, 2.79% gc time, 41.07% compilation time)
