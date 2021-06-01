@@ -80,21 +80,30 @@ function kinetic_energy(lattice, basis)
 end
 
 @time kinetic_energy(lattice, basis) # 6.563267 seconds (237.02 k allocations: 422.728 MiB, 1.07% gc time)
-@time scfstress = ForwardDiff.gradient(lattice -> kinetic_energy(lattice, basis), lattice) # 10.585561 seconds (5.96 M allocations: 801.731 MiB, 2.79% gc time, 41.07% compilation time)
-# 3×3 Matrix{Float64}:
-#   0.206717  -0.207215  -0.207228
-#  -0.198914   0.209309  -0.20982
-#  -0.197421  -0.208313   0.207815
 
-mean(abs2, scfstress - stresses[:ForwardDiff]) # 1.229684392133372e-13
-mean(abs2, scfstress - stresses[:FiniteDiff])  # 1.229555099217553e-13
+scfstresses = Dict()
 
-@time ReverseDiff.gradient(lattice -> kinetic_energy(lattice, basis), lattice) # 5.916272 seconds (4.55 M allocations: 578.416 MiB, 8.12% gc time, 0.99% compilation time)
-# 3×3 Matrix{Float64}:
-#   0.206717  -0.207215  -0.207228
-#  -0.198914   0.209309  -0.20982
-#  -0.197421  -0.208313   0.207815
+# works
+@time scfstresses[:ForwardDiff] = ForwardDiff.gradient(lattice -> kinetic_energy(lattice, basis), lattice) # 10.585561 seconds (5.96 M allocations: 801.731 MiB, 2.79% gc time, 41.07% compilation time)
+mean(abs, scfstresses[:ForwardDiff] - stresses[:ForwardDiff]) # 9.980829927967881e-8
+mean(abs, scfstresses[:ForwardDiff] - stresses[:FiniteDiff])  # 9.980361578226176e-8
+
+# works
+@time scfstresses[:ReverseDiff] = ReverseDiff.gradient(lattice -> kinetic_energy(lattice, basis), lattice) # 5.916272 seconds (4.55 M allocations: 578.416 MiB, 8.12% gc time, 0.99% compilation time)
+mean(abs, scfstresses[:ReverseDiff] - stresses[:ForwardDiff]) # 8.840251322947721e-8
+mean(abs, scfstresses[:ReverseDiff] - stresses[:FiniteDiff])  # 8.840645565919323e-8
 
 # @time Zygote.gradient(lattice -> kinetic_energy(lattice, basis), lattice)
 # ERROR: LoadError: Compiling Tuple{DFTK.var"##self_consistent_field#487", Int64, RealFourierArray{Float64, Array{Float64, 3}, Array{ComplexF64, 3}}, Nothing, Nothing, Float64, Int64, DFTK.var"#fp_solver#458"{DFTK.var"#fp_solver#456#459"{Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}}, Int64, Symbol}}, typeof(lobpcg_hyper), Int64, DFTK.var"#determine_diagtol#485"{Float64}, SimpleMixing, DFTK.var"#is_converged#481"{Float64}, DFTK.var"#callback#480", Bool, Bool, typeof(DFTK.compute_occupation), typeof(self_consistent_field), PlaneWaveBasis{Float64}}: 
 # try/catch is not supported.
+
+# works (but inaccurate)
+@time scfstresses[:FiniteDiff] = FiniteDiff.finite_difference_gradient(lattice -> kinetic_energy(lattice, basis), lattice) # 112.216235 seconds (5.17 M allocations: 7.492 GiB, 0.71% gc time, 0.57% compilation time)
+mean(abs, scfstresses[:FiniteDiff] - stresses[:ForwardDiff]) # 0.11372020632766239
+mean(abs, scfstresses[:FiniteDiff] - stresses[:FiniteDiff])  # 0.11372020631126589
+
+scfstresses
+# Dict{Any, Any} with 3 entries:
+#   :ForwardDiff => [0.206717 -0.207215 -0.207228; -0.198914 0.209308 -0.20982; -0.197421 -0.208313 0.207815]
+#   :FiniteDiff  => [0.183338 -0.139174 -0.251556; -0.207198 0.362999 -0.224272; -0.214479 -0.223362 0.243646]
+#   :ReverseDiff => [0.206717 -0.207215 -0.207228; -0.198914 0.209309 -0.20982; -0.197421 -0.208313 0.207815]
