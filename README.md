@@ -26,8 +26,8 @@ https://github.com/JuliaMolSim/DFTK.jl/pull/494
 ForwardDiff scf example
 TODO pr to main
 
-Zygote stresses (WIP draft)
-TODO pr to main
+(draft) Hellmann-Feynman derivatives using ChainRules and Zygote #519
+https://github.com/JuliaMolSim/DFTK.jl/pull/519
 
 ## ChainRules.jl
 
