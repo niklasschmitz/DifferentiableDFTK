@@ -7,9 +7,9 @@ https://summerofcode.withgoogle.com/projects/#6407471502983168
 
 
 
-## Pull requests
+# Pull requests
 
-DFTK.jl
+## DFTK.jl
 
 ForwardDiff stresses
 https://github.com/JuliaMolSim/DFTK.jl/issues/443
@@ -29,36 +29,33 @@ TODO pr to main
 Zygote stresses (WIP draft)
 TODO pr to main
 
-ChainRules.jl
+## ChainRules.jl
 
-Add nondiff rules for one ones zero zeros #465
+**(merged)** Add nondiff rules for one ones zero zeros #465
 https://github.com/JuliaDiff/ChainRules.jl/pull/465
 
-(Fix #446) Widen _mulsubtrans!! type signature #447
+**(merged)** (Fix #446) Widen _mulsubtrans!! type signature #447
 https://github.com/JuliaDiff/ChainRules.jl/pull/447
 
 ## Snippets
 
-- NLSolve general implicit differentiation rrule
+- NLsolve general implicit differentiation rrule
 https://gist.github.com/niklasschmitz/b00223b9e9ba2a37ed09539a264bf423
 
-- linsolve implicit differentiation rrule
-- Application example on a small differential equation (linsolve inside nlsolve)
+- linsolve implicit differentiation rrule https://github.com/niklasschmitz/DifferentiableDFTK/blob/main/sandbox/1D/1D.jl#L128-L140
+
+- Application example on a small differential equation (linsolve inside nlsolve) https://github.com/niklasschmitz/DifferentiableDFTK/blob/main/sandbox/1D/1D.jl
 
 ## Issues
 
-- NLSolve
-
-Anderson instability example #273
+NLSolve.jl: Anderson instability example #273
 https://github.com/JuliaNLSolvers/NLsolve.jl/issues/273
 
-participated:
-https://github.com/JuliaDiff/ForwardDiff.jl/pull/495
 
 ## Workarounds
 
 ForwardDiff
-- AbstractFFT rules (based on mcabbotts draft, fixed some bugs & perf penalties; should ideally be upstreamed)
+- AbstractFFT rules (based on mcabbotts draft https://github.com/JuliaDiff/ForwardDiff.jl/pull/495, fixed some bugs & perf penalties; should ideally be upstreamed)
 - norm of SVec at zero: custom rule to comply with chainrules convention (and consistency with norm(Vector(x)))
 otherwise very pleasant overall and easy to debug
 
