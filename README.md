@@ -11,30 +11,35 @@ https://summerofcode.withgoogle.com/projects/#6407471502983168
 
 ## DFTK.jl
 
-ForwardDiff stresses
+Main Project Goal: Hellmann-Feynman stresses via ForwardDiff      
 https://github.com/JuliaMolSim/DFTK.jl/issues/443
 
-**(merged)** Hellmann-Feynman stresses via ForwardDiff and custom rules #476
+Main PR implementing the needed infrastructure for ForwardDiff compatibility:  
+**(merged)** Hellmann-Feynman stresses via ForwardDiff and custom rules #476  
 https://github.com/JuliaMolSim/DFTK.jl/pull/476
 
-**(merged)** Extend ForwardDiff fallback for SVector norm to handle multiple partials #488
+Follow-up PRs:  
+**(merged)** Extend ForwardDiff fallback for SVector norm to handle multiple partials #488  
 https://github.com/JuliaMolSim/DFTK.jl/pull/488
 
-**(merged)** Improve _apply_plan type stability #494
+**(merged)** Improve _apply_plan type stability #494  
 https://github.com/JuliaMolSim/DFTK.jl/pull/494
 
-ForwardDiff scf example
-TODO pr to main
+**How to use**: To the end user, the new feature of calculating stresses of a converged solution can now be accessed by calling `stresses = compute_stresses(scfres)`. For a complete example, see the testcases in https://github.com/JuliaMolSim/DFTK.jl/blob/master/test/stresses.jl.  
 
-(draft) Hellmann-Feynman derivatives using ChainRules and Zygote #519
+Other stretch goals:
+
+(draft) ForwardDiff example of implicit differentiation beyond the Hellman-Feynman theorem, to calculate a dipole moment.
+
+(draft) Hellmann-Feynman derivatives using ChainRules and Zygote #519  
 https://github.com/JuliaMolSim/DFTK.jl/pull/519
 
 ## ChainRules.jl
 
-**(merged)** Add nondiff rules for one ones zero zeros #465
+**(merged)** Add nondiff rules for one ones zero zeros #465  
 https://github.com/JuliaDiff/ChainRules.jl/pull/465
 
-**(merged)** (Fix #446) Widen _mulsubtrans!! type signature #447
+**(merged)** (Fix #446) Widen _mulsubtrans!! type signature #447  
 https://github.com/JuliaDiff/ChainRules.jl/pull/447
 
 ## Snippets
