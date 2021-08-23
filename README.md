@@ -30,7 +30,8 @@ https://github.com/JuliaMolSim/DFTK.jl/pull/494
 
 Other stretch goals:
 
-(draft) ForwardDiff example of implicit differentiation beyond the Hellman-Feynman theorem, to calculate a dipole moment.
+(draft) ForwardDiff example of implicit differentiation beyond the Hellman-Feynman theorem, to calculate a dipole moment.  
+https://github.com/JuliaMolSim/DFTK.jl/pull/520
 
 (draft) Hellmann-Feynman derivatives using ChainRules and Zygote #519  
 https://github.com/JuliaMolSim/DFTK.jl/pull/519
