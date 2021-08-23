@@ -5,7 +5,8 @@ Automatic differentiation for density functional theory in Julia.
 This project is part of Google Summer of Code 2021.
 https://summerofcode.withgoogle.com/projects/#6407471502983168
 
-
+Student: Niklas Schmitz  
+Mentors: Michael Herbst, Antoine Levitt, Dhairya Gandhi, Keno Fischer
 
 # Pull requests
 
